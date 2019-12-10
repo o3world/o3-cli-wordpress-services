@@ -22,7 +22,7 @@ class Url_List_Manager {
     $menu_paths = $this->build_menu_paths($test_plan);
     $merged_paths = array_merge($node_paths, $menu_paths);
     sort($merged_paths);
-    return array();
+    return $merged_paths;
   }
 
   /**
@@ -43,7 +43,7 @@ class Url_List_Manager {
    * @return array
    */
   public function count_posts_by_type() {
-    $post_types = array();
+    $post_types = get_post_types();
     return $this->get_post_type_data('count', $post_types);
   }
 
@@ -56,8 +56,29 @@ class Url_List_Manager {
    * @return void
    */
   protected function get_post_type_data($data_type = 'path', $post_types, $limit = FALSE) {
+    $post_ids = array();
+    foreach ($post_types as $type) {
+      $post_ids[$type] = get_posts(array(
+        'fields'          => 'ids', // Only get post IDs
+        'posts_per_page'  => $limit,
+        'post_type'       => $type,
+      ));
+    }
     $extracted_data = array();
-
+    if ($data_type === 'path') {
+      // Extract paths from all post types, flattening array.
+      foreach ($post_ids as $type_data) {
+        $extracted_data = array_merge($extracted_data, array_map(function($id) {
+          return str_replace(home_url(), '', get_permalink($id));
+        },$type_data));
+      }
+    }
+    elseif ($data_type === 'count') {
+      // Count ids per post type.
+      foreach ($post_ids as $type => $type_data) {
+        $extracted_data[$type] = count($type_data);
+      }
+    }
     return $extracted_data;
   }
 
