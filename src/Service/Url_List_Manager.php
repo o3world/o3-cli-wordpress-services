@@ -33,7 +33,7 @@ class Url_List_Manager {
    */
   protected function build_post_paths(Url_List_Plan_Interface $test_plan) {
     $properties = $test_plan->get_properties();
-    $post_data = $this->get_post_type_data('path', $properties['post_types'], $properties['limit']);
+    $post_data = $this->get_post_type_data('path', $properties['post_types'], $properties['limit'], $properties['categories']);
     return $post_data;
   }
 
@@ -44,6 +44,7 @@ class Url_List_Manager {
    */
   public function count_posts_by_type() {
     $post_types = get_post_types();
+    sort($post_types);
     return $this->get_post_type_data('count', $post_types);
   }
 
@@ -52,17 +53,23 @@ class Url_List_Manager {
    *
    * @param string $data_type
    * @param array $post_types
-   * @param boolean $limit
+   * @param integer $limit
+   * @param array|null $categories
    * @return void
    */
-  protected function get_post_type_data($data_type = 'path', $post_types, $limit = FALSE) {
+  protected function get_post_type_data($data_type = 'path', $post_types, $limit = -1, $categories = NULL) {
     $post_ids = array();
     foreach ($post_types as $type) {
-      $post_ids[$type] = get_posts(array(
-        'fields'          => 'ids', // Only get post IDs
-        'posts_per_page'  => $limit,
-        'post_type'       => $type,
-      ));
+      if ($categories) {
+        $post_ids[$type] = array();
+        foreach ($categories as $category_slug) {
+          $category = get_category_by_slug($category_slug);
+          $post_ids[$type] = array_merge($post_ids[$type], $this->get_post_ids($limit, $type, $category->term_id));
+        }
+      }
+      else {
+        $post_ids[$type] = $this->get_post_ids($limit, $type);
+      }
     }
     $extracted_data = array();
     if ($data_type === 'path') {
@@ -72,14 +79,38 @@ class Url_List_Manager {
           return str_replace(home_url(), '', get_permalink($id));
         },$type_data));
       }
+      sort($extracted_data);
     }
     elseif ($data_type === 'count') {
       // Count ids per post type.
       foreach ($post_ids as $type => $type_data) {
-        $extracted_data[$type] = count($type_data);
+        if (count($type_data)) {
+          $extracted_data[$type] = array('count' => count($type_data));
+        }
       }
     }
     return $extracted_data;
+  }
+
+  /**
+   * Get IDs of posts
+   *
+   * @param integer $limit
+   * @param string $type
+   * @param integer $category
+   *   The term ID of the category term.
+   * @return void
+   */
+  protected function get_post_ids($limit, $type, $category = NULL) {
+    $args = array(
+      'fields'          => 'ids',
+      'posts_per_page'  => $limit,
+      'post_type'       => $type,
+    );
+    if ($category) {
+      $args['category'] = $category;
+    }
+    return get_posts($args);
   }
 
   /**
@@ -95,12 +126,13 @@ class Url_List_Manager {
   }
 
   /**
-   * Count nodes in menus
+   * Count items in all menus
    *
    * @return array
    */
-  public function countMenuNodes() {
-    $menus = array();
+  public function count_menu_items() {
+    $menus = wp_list_pluck(get_terms( 'nav_menu' ), 'slug');
+    sort($menus);
     return $this->get_menu_data($menus, 'count');
   }
 
@@ -116,41 +148,34 @@ class Url_List_Manager {
     $data = array();
     if (!empty($menus)) {
       // Load each menu & extract all child links, recursively.
-      foreach ($menus as $menu) {
-        // if ($menu_tree = $this->menuLinkTree->load($menu, new MenuTreeParameters())) {
-        //   $this->extract_paths_from_menu($data, $menu, $menu_tree, $data_type);
-        //   $data = array_filter(array_unique($data));
-        // }
+      foreach ($menus as $menu_slug) {
+        $menu_objects = wp_get_nav_menu_items($menu_slug);
+        $data[$menu_slug] = array_filter(array_map(function ($menu_object) {
+          if ($menu_object instanceof \WP_Post && strpos($menu_object->url, home_url()) !== FALSE) {
+            return str_replace(home_url(), '', $menu_object->url);
+          }
+        }, $menu_objects));
+      }
+      $extracted_data = array();
+      if ($data_type === 'path') {
+        // Extract paths from all menus, flattening array.
+        foreach ($data as $urls) {
+          $extracted_data = array_merge($extracted_data, array_map(function($url) {
+            return $url;
+          },$urls));
+        }
+        sort($extracted_data);
+      }
+      elseif ($data_type === 'count') {
+        // Count menu items per menu.
+        foreach ($data as $slug => $urls) {
+          if (count($urls) > 0) {
+            $extracted_data[$slug] = array('count' => count($urls));
+          }
+        }
       }
     }
-    return $data;
-  }
-
-  /**
-   * A recursive function that extracts link paths in nested menus
-   *s
-   * - Only selects links with internal URLs
-   *
-   * @param array $paths
-   * @param string $menu
-   * @param array $menu_tree
-   * @param string $data_type
-   *   - Either 'path' or 'count'
-   */
-  protected function extract_paths_from_menu(array &$data, string $menu, array $menu_tree, string $data_type) {
-    foreach (array_values($menu_tree) as $item) {
-      // if ($item->link->isEnabled() && !$item->link->getUrlObject()->isExternal()) {
-      //   if ($data_type === 'path') {
-      //     //$dataarray() = $item->link->getUrlObject()->toString(TRUE)->getGeneratedUrl();
-      //   }
-      //   elseif ($data_type === 'count') {
-      //     $data[$menu] = isset($data[$menu]) ? $data[$menu] + 1 : 1;
-      //   }
-      //   if ($item->hasChildren) {
-      //     $this->extractPathsFromMenu($data, $menu, $item->subtree, $data_type);
-      //   }
-      // }
-    }
+    return $extracted_data;
   }
 
 }

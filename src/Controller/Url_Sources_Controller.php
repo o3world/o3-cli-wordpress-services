@@ -6,9 +6,9 @@ use O3CliServices\Model\O3_Url_List_Plan;
 use O3CliServices\Service\Url_List_Manager;
 
 /**
- * Controller for the /o3-cli-api/urls endpoint
+ * Controller for the /o3-cli-api/url-sources endpoint
  */
-class Url_List_Controller extends \WP_REST_Controller {
+class Url_Sources_Controller extends \WP_REST_Controller {
 
   /**
    * URL List Manager
@@ -26,10 +26,10 @@ class Url_List_Controller extends \WP_REST_Controller {
    */
   public function register_route() {
     $namespace = 'o3-cli-api/';
-    register_rest_route( $namespace, '/urls', array(
+    register_rest_route( $namespace, '/url-sources', array(
       array(
         'methods'             => \WP_REST_Server::READABLE,
-        'callback'            => array( $this, 'get_urls' ),
+        'callback'            => array($this, 'get_sources'),
       ),
     ) );
   }
@@ -40,20 +40,12 @@ class Url_List_Controller extends \WP_REST_Controller {
    * @param \WP_REST_Request $request Full data about the request.
    * @return \WP_Error|\WP_REST_Response
    */
-  public function get_urls( $request ) {
-    // Return URL list based on valid list plan.
-    if ($list_plan = $this->get_url_list_plan($request)) {
-      $response_array = $this->url_list_manager->build_paths_array($list_plan);
-      $http_code = 200;
-    }
-    else {
-      $response_array = [
-        'success' => false,
-        'message' => __('The generic test generator requires either valid query parameters for either \'post_types\' or \'menus\'.'),
-      ];
-      $http_code = 400;
-    }
-    return new \WP_REST_Response( $response_array, $http_code );
+  public function get_sources( $request ) {
+    $response_array = array(
+      'post_types' => $this->url_list_manager->count_posts_by_type(),
+      'menus' => $this->url_list_manager->count_menu_items(),
+    );
+    return new \WP_REST_Response($response_array);
   }
 
   /**

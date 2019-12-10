@@ -9,13 +9,14 @@
  */
 
 use O3CliServices\Controller\Url_List_Controller;
+use O3CliServices\Controller\Url_Sources_Controller;
 
 /**
  * Add action hooks
  */
 add_action( 'init', 'o3_cli_autoload' );
 add_action( 'rest_api_init', function () {
-  o3_cli_register_url_list();
+  o3_cli_register_controllers();
 } );
 
 /**
@@ -31,8 +32,10 @@ function o3_cli_autoload() {
 /**
  * Callback for 'rest_api_init' action
  */
-function o3_cli_register_url_list() {
-  $controller = new Url_List_Controller;
-  $controller->register_route();
+function o3_cli_register_controllers() {
+  $list_controller = new Url_List_Controller;
+  $list_controller->register_route();
+  $sources_controler = new Url_Sources_Controller;
+  $sources_controler->register_route();
 }
 
