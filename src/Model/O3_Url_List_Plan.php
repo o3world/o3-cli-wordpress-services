@@ -66,6 +66,7 @@ class O3_Url_List_Plan extends Abstract_Url_List_Plan {
           $this->menus = $this->get_valid_menus($value);
           break;
         case 'limit':
+          // User-entered '0' should evaluate to 'unlimited'
           $this->limit = $value == 0 ? -1 : $value;
           break;
       }

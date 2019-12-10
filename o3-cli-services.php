@@ -5,11 +5,13 @@
  * Description:     Exposes APIs that assist the use of the O3 CLI with Wordpress projects
  * Author:          Matt Schaff
  * Author URI:      https://www.o3world.com/about/team/matt-schaff/
- * Version:         1.0
+ * Version:         1.0.0
  */
 
 use O3CliServices\Controller\Url_List_Controller;
 use O3CliServices\Controller\Url_Sources_Controller;
+
+require_once dirname(__FILE__) . '/auto-load.php';
 
 /**
  * Add action hooks
@@ -23,7 +25,6 @@ add_action( 'rest_api_init', function () {
  * Callback for 'init' action
  */
 function o3_cli_autoload() {
-  require_once dirname(__FILE__) . '/auto-load.php';
   $loader = new \O3_Cli_Autoloader;
   $loader->register();
   $loader->add_namespace('O3CliServices', dirname(__FILE__) . '/src');

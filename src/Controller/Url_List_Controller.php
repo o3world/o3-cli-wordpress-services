@@ -47,10 +47,10 @@ class Url_List_Controller extends \WP_REST_Controller {
       $http_code = 200;
     }
     else {
-      $response_array = [
+      $response_array = array(
         'success' => false,
         'message' => __('The generic test generator requires either valid query parameters for either \'post_types\' or \'menus\'.'),
-      ];
+      );
       $http_code = 400;
     }
     return new \WP_REST_Response( $response_array, $http_code );
