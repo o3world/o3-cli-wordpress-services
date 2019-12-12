@@ -44,143 +44,138 @@
  *      <?php
  *      new \Foo\Bar\Qux\QuuxTest;
  */
-class O3_Cli_Autoloader
-{
-    /**
-     * An associative array where the key is a namespace prefix and the value
-     * is an array of base directories for classes in that namespace.
-     *
-     * @var array
-     */
-    protected $prefixes = array();
+class O3_Cli_Autoloader {
 
-    /**
-     * Register loader with SPL autoloader stack.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        spl_autoload_register(array($this, 'add_class'));
-    }
+	/**
+	 * An associative array where the key is a namespace prefix and the value
+	 * is an array of base directories for classes in that namespace.
+	 *
+	 * @var array
+	 */
+	protected $prefixes = array();
 
-    /**
-     * Adds a base directory for a namespace prefix.
-     *
-     * @param string $prefix The namespace prefix.
-     * @param string $base_dir A base directory for class files in the
-     * namespace.
-     * @param bool $prepend If true, prepend the base directory to the stack
-     * instead of appending it; this causes it to be searched first rather
-     * than last.
-     * @return void
-     */
-    public function add_namespace($prefix, $base_dir, $prepend = false)
-    {
-        // normalize namespace prefix
-        $prefix = trim($prefix, '\\') . '\\';
+	/**
+	 * Register loader with SPL autoloader stack.
+	 *
+	 * @return void
+	 */
+	public function register() {
+		spl_autoload_register( array( $this, 'add_class' ) );
+	}
 
-        // normalize the base directory with a trailing separator
-        $base_dir = rtrim($base_dir, DIRECTORY_SEPARATOR) . '/';
+	/**
+	 * Adds a base directory for a namespace prefix.
+	 *
+	 * @param string $prefix The namespace prefix.
+	 * @param string $base_dir A base directory for class files in the
+	 * namespace.
+	 * @param bool $prepend If true, prepend the base directory to the stack
+	 * instead of appending it; this causes it to be searched first rather
+	 * than last.
+	 * @return void
+	 */
+	public function add_namespace( $prefix, $base_dir, $prepend = false ) {
+		// normalize namespace prefix
+		$prefix = trim( $prefix, '\\' ) . '\\';
 
-        // initialize the namespace prefix array
-        if (isset($this->prefixes[$prefix]) === false) {
-            $this->prefixes[$prefix] = array();
-        }
+		// normalize the base directory with a trailing separator
+		$base_dir = rtrim( $base_dir, DIRECTORY_SEPARATOR ) . '/';
 
-        // retain the base directory for the namespace prefix
-        if ($prepend) {
-            array_unshift($this->prefixes[$prefix], $base_dir);
-        } else {
-            array_push($this->prefixes[$prefix], $base_dir);
-        }
-    }
+		// initialize the namespace prefix array
+		if ( isset( $this->prefixes[ $prefix ] ) === false ) {
+			$this->prefixes[ $prefix ] = array();
+		}
 
-    /**
-     * Loads the class file for a given class name.
-     *
-     * @param string $class The fully-qualified class name.
-     * @return mixed The mapped file name on success, or boolean false on
-     * failure.
-     */
-    public function add_class($class)
-    {
-        // the current namespace prefix
-        $prefix = $class;
+		// retain the base directory for the namespace prefix
+		if ( $prepend ) {
+			array_unshift( $this->prefixes[ $prefix ], $base_dir );
+		} else {
+			array_push( $this->prefixes[ $prefix ], $base_dir );
+		}
+	}
 
-        // work backwards through the namespace names of the fully-qualified
-        // class name to find a mapped file name
-        while (false !== $pos = strrpos($prefix, '\\')) {
+	/**
+	 * Loads the class file for a given class name.
+	 *
+	 * @param string $class The fully-qualified class name.
+	 * @return mixed The mapped file name on success, or boolean false on
+	 * failure.
+	 */
+	public function add_class( $class ) {
+		// the current namespace prefix
+		$prefix = $class;
 
-            // retain the trailing namespace separator in the prefix
-            $prefix = substr($class, 0, $pos + 1);
+		// work backwards through the namespace names of the fully-qualified
+		// class name to find a mapped file name
+		while ( false !== $pos = strrpos( $prefix, '\\' ) ) {
 
-            // the rest is the relative class name
-            $relative_class = substr($class, $pos + 1);
+			// retain the trailing namespace separator in the prefix
+			$prefix = substr( $class, 0, $pos + 1 );
 
-            // try to load a mapped file for the prefix and relative class
-            $mapped_file = $this->load_mapped_file($prefix, $relative_class);
-            if ($mapped_file) {
-                return $mapped_file;
-            }
+			// the rest is the relative class name
+			$relative_class = substr( $class, $pos + 1 );
 
-            // remove the trailing namespace separator for the next iteration
-            // of strrpos()
-            $prefix = rtrim($prefix, '\\');
-        }
+			// try to load a mapped file for the prefix and relative class
+			$mapped_file = $this->load_mapped_file( $prefix, $relative_class );
+			if ( $mapped_file ) {
+				return $mapped_file;
+			}
 
-        // never found a mapped file
-        return false;
-    }
+			// remove the trailing namespace separator for the next iteration
+			// of strrpos()
+			$prefix = rtrim( $prefix, '\\' );
+		}
 
-    /**
-     * Load the mapped file for a namespace prefix and relative class.
-     *
-     * @param string $prefix The namespace prefix.
-     * @param string $relative_class The relative class name.
-     * @return mixed Boolean false if no mapped file can be loaded, or the
-     * name of the mapped file that was loaded.
-     */
-    protected function load_mapped_file($prefix, $relative_class)
-    {
-        // are there any base directories for this namespace prefix?
-        if (isset($this->prefixes[$prefix]) === false) {
-            return false;
-        }
+		// never found a mapped file
+		return false;
+	}
 
-        // look through base directories for this namespace prefix
-        foreach ($this->prefixes[$prefix] as $base_dir) {
+	/**
+	 * Load the mapped file for a namespace prefix and relative class.
+	 *
+	 * @param string $prefix The namespace prefix.
+	 * @param string $relative_class The relative class name.
+	 * @return mixed Boolean false if no mapped file can be loaded, or the
+	 * name of the mapped file that was loaded.
+	 */
+	protected function load_mapped_file( $prefix, $relative_class ) {
+		// are there any base directories for this namespace prefix?
+		if ( isset( $this->prefixes[ $prefix ] ) === false ) {
+			return false;
+		}
 
-            // replace the namespace prefix with the base directory,
-            // replace namespace separators with directory separators
-            // in the relative class name, append with .php
-            $file = $base_dir
-                  . str_replace('\\', '/', $relative_class)
-                  . '.php';
+		// look through base directories for this namespace prefix
+		foreach ( $this->prefixes[ $prefix ] as $base_dir ) {
 
-            // if the mapped file exists, require it
-            if ($this->require_file($file)) {
-                // yes, we're done
-                return $file;
-            }
-        }
+			// replace the namespace prefix with the base directory,
+			// replace namespace separators with directory separators
+			// in the relative class name, append with .php
+			$file = $base_dir
+				  . str_replace( '\\', '/', $relative_class )
+				  . '.php';
 
-        // never found it
-        return false;
-    }
+			// if the mapped file exists, require it
+			if ( $this->require_file( $file ) ) {
+				// yes, we're done
+				return $file;
+			}
+		}
 
-    /**
-     * If a file exists, require it from the file system.
-     *
-     * @param string $file The file to require.
-     * @return bool True if the file exists, false if not.
-     */
-    protected function require_file($file)
-    {
-        if (file_exists($file)) {
-            require $file;
-            return true;
-        }
-        return false;
-    }
+		// never found it
+		return false;
+	}
+
+	/**
+	 * If a file exists, require it from the file system.
+	 *
+	 * @param string $file The file to require.
+	 * @return bool True if the file exists, false if not.
+	 */
+	protected function require_file( $file ) {
+		if ( file_exists( $file ) ) {
+			require $file;
+			return true;
+		}
+		return false;
+	}
 }

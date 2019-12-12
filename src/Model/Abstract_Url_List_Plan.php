@@ -9,26 +9,26 @@ use O3CliServices\Url_List_Plan_Interface;
  */
 class Abstract_Url_List_Plan implements Url_List_Plan_Interface {
 
-  /**
-   * Constructs the Abstract_Url_List_Plan object
-   *
-   * @param array $parameters
-   */
-  public  function __construct(array $parameters) {
-  }
+	/**
+	 * Constructs the Abstract_Url_List_Plan object
+	 *
+	 * @param array $parameters
+	 */
+	public function __construct( array $parameters ) {
+	}
 
-  /**
-   * @inheritDoc
-   */
-  public function get_properties() {
-    return array();
-  }
+	/**
+	 * @inheritDoc
+	 */
+	public function get_properties() {
+		return array();
+	}
 
-  /**
-   * @inheritDoc
-   */
-  public function is_plan_valid() {
-    return TRUE;
-  }
+	/**
+	 * @inheritDoc
+	 */
+	public function is_plan_valid() {
+		return true;
+	}
 
 }
