@@ -11,7 +11,7 @@
 use O3CliServices\Controller\Url_List_Controller;
 use O3CliServices\Controller\Url_Sources_Controller;
 
-require_once dirname( __FILE__ ) . '/auto-load.php';
+require_once dirname( __FILE__ ) . '/class-o3-cli-autoloader.php';
 
 /**
  * Add action hooks
