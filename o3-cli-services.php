@@ -5,7 +5,7 @@
  * Description:     Exposes APIs that assist the use of the O3 CLI with WordPress projects
  * Author:          Matt Schaff
  * Author URI:      https://www.o3world.com/about/team/matt-schaff/
- * Version:         1.0.0
+ * Version:         1.0.1
  */
 
 use O3CliServices\Controller\Url_List_Controller;
