@@ -3,7 +3,7 @@ Contributors: gwolfman
 Tags: O3 CLI, automation, quality assurance, testing, regression testing, REST API
 Requires at least: 4.0
 Tested up to: 5.3.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 
 O3 CLI Services integrates any WordPress site with the O3 CLI
@@ -54,6 +54,11 @@ https://www.npmjs.com/package/o3-cli.
 
 
 == Changelog ==
+
+= 1.0.1 =
+*Release Date - 19 December 2019*
+
+* Initial release
 
 = 1.0.0 =
 *Release Date - 19 December 2019*
