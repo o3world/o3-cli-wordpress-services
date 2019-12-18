@@ -55,4 +55,7 @@ https://www.npmjs.com/package/o3-cli.
 
 == Changelog ==
 
-(To be updated upon WP plugin submission approval)
+= 1.0.0 =
+*Release Date - 19 December 2019*
+
+* Initial release
